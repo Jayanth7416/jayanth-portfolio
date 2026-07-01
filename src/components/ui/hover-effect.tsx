@@ -1,7 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useState, MouseEvent } from "react";
+import { ArrowUpRight } from "lucide-react";
 
 type HoverItem = {
   title: string;
@@ -27,11 +28,19 @@ export const HoverEffect = ({
       )}
     >
       {items.map((item, idx) => (
-        <a
+        <motion.a
           href={item?.link}
           target="_blank"
           rel="noreferrer noopener"
           key={item.title + idx}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{
+            duration: 0.55,
+            delay: idx * 0.08,
+            ease: [0.16, 1, 0.3, 1],
+          }}
           className="relative group block p-2 h-full w-full"
           onMouseEnter={() => setHoveredIndex(idx)}
           onMouseLeave={() => setHoveredIndex(null)}
@@ -39,21 +48,21 @@ export const HoverEffect = ({
           <AnimatePresence>
             {hoveredIndex === idx && (
               <motion.span
-                className="absolute inset-0 h-full w-full bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-cyan-500/10 block rounded-2xl"
+                className="absolute inset-0 h-full w-full bg-gradient-to-br from-indigo-500/25 via-purple-500/25 to-cyan-500/15 block rounded-2xl blur-xl"
                 layoutId="hoverBackground"
                 initial={{ opacity: 0 }}
                 animate={{
                   opacity: 1,
-                  transition: { duration: 0.15 },
+                  transition: { duration: 0.2 },
                 }}
                 exit={{
                   opacity: 0,
-                  transition: { duration: 0.15, delay: 0.2 },
+                  transition: { duration: 0.2, delay: 0.1 },
                 }}
               />
             )}
           </AnimatePresence>
-          <Card>
+          <ProjectCard>
             <CardTitle>{item.title}</CardTitle>
             <CardDescription>{item.description}</CardDescription>
             {item.tech && (
@@ -61,38 +70,64 @@ export const HoverEffect = ({
                 {item.tech.map((t) => (
                   <span
                     key={t}
-                    className="text-xs px-2 py-1 rounded-md border border-white/10 bg-white/5 text-neutral-300"
+                    className="text-xs px-2 py-1 rounded-md border border-white/10 bg-white/5 text-neutral-300 group-hover:border-purple-400/40 transition-colors"
                   >
                     {t}
                   </span>
                 ))}
               </div>
             )}
-          </Card>
-        </a>
+          </ProjectCard>
+        </motion.a>
       ))}
     </div>
   );
 };
 
-const Card = ({
+const ProjectCard = ({
   className,
   children,
 }: {
   className?: string;
   children: React.ReactNode;
-}) => (
-  <div
-    className={cn(
-      "rounded-2xl h-full w-full p-6 overflow-hidden bg-black border border-white/10 group-hover:border-white/20 relative z-20 transition-colors",
-      className,
-    )}
-  >
-    <div className="relative z-50">
-      <div className="p-2">{children}</div>
+}) => {
+  const handleMove = (e: MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    e.currentTarget.style.setProperty("--mx", `${x}%`);
+    e.currentTarget.style.setProperty("--my", `${y}%`);
+  };
+
+  return (
+    <div
+      onMouseMove={handleMove}
+      className={cn(
+        "relative rounded-2xl h-full w-full p-6 overflow-hidden bg-black border border-white/10 group-hover:border-white/25 z-20 transition-all duration-300 card-glow",
+        className,
+      )}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background:
+            "radial-gradient(420px circle at var(--mx,50%) var(--my,50%), rgba(139,92,246,0.16), transparent 55%)",
+        }}
+      />
+      <div className="relative z-30 p-2">
+        {children}
+        <div className="mt-6 inline-flex items-center gap-1 text-xs uppercase tracking-[0.2em] text-purple-400/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          View
+          <ArrowUpRight
+            size={12}
+            className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+          />
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const CardTitle = ({ children }: { children: React.ReactNode }) => (
   <h4 className="text-zinc-100 font-bold tracking-wide mt-2 text-lg">
