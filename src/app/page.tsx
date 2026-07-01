@@ -1,4 +1,6 @@
 import { FloatingNav } from "@/components/ui/floating-nav";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { CursorGlow } from "@/components/ui/cursor-glow";
 import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { ExperienceSection } from "@/components/sections/experience";
@@ -19,6 +21,8 @@ const navItems = [
 export default function Home_Page() {
   return (
     <main className="relative bg-black">
+      <ScrollProgress />
+      <CursorGlow />
       <FloatingNav navItems={navItems} />
       <Hero />
       <About />
